@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SPAR — Semantic-Pixel Self-Alignment and Adaptive Routing for Unified Multimodal Models</title>
+    <meta
+      name="description"
+      content="SPAR: Semantic-Pixel Self-Alignment and Adaptive Routing for Unified Multimodal Models. An asymmetric dual-stream unified tokenizer with self-aligned generation and dynamic token routing."
+    />
+
+    <meta property="og:title" content="SPAR — Unified Multimodal Models" />
+    <meta
+      property="og:description"
+      content="Asymmetric dual-stream unified tokenizer + self-aligned generation + dynamic token routing for unified understanding and generation."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="figures/intro.png" />
+
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- KaTeX (math) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+    />
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    ></script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+
+    <header class="topbar">
+      <div class="container topbar__inner">
+        <a class="brand" href="#top" aria-label="SPAR home">
+          <span class="brand__text">SPAR</span>
+        </a>
+
+        <nav class="nav" aria-label="Primary">
+          <a class="nav__link" href="#abstract">Abstract</a>
+          <a class="nav__link" href="#method">Method</a>
+          <a class="nav__link" href="#results">Results</a>
+          <a class="nav__link" href="#gallery">Gallery</a>
+          <a class="nav__link" href="#bibtex">BibTeX</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="content">
+      <section class="hero" id="top">
+        <div class="container hero__grid">
+          <div class="hero__left">
+            <h1 class="hero__title">
+              <span class="hero__title--big">SPAR</span>
+              <br />
+              <span class="hero__subtitle"
+                >Semantic-Pixel Self-Alignment and Adaptive Routing<br />for Unified Multimodal Models</span
+              >
+            </h1>
+
+            <p class="hero__authors">
+              <a href="#" class="author">Hongxiang Li</a><sup>1,*</sup>,
+              <a href="#" class="author">Hongxu Chen</a><sup>1,*</sup>,
+              <a href="#" class="author">Chenyang Zhu</a><sup>2</sup>,
+              <a href="#" class="author">Xiaoshuang Huang</a><sup>3</sup>,
+              <a href="#" class="author">Jiayin Cai</a><sup>3</sup>,
+              <a href="#" class="author">Xiaolong Jiang</a><sup>3</sup>,
+              <a href="#" class="author">Yao Hu</a><sup>3</sup>,
+              <a href="#" class="author">Long Chen</a><sup>1,&dagger;</sup>
+            </p>
+            <p class="hero__affil">
+              <sup>1</sup>The Hong Kong University of Science and Technology &nbsp;
+              <sup>2</sup>Tsinghua University &nbsp;
+              <sup>3</sup>Xiaohongshu Inc.
+            </p>
+            <p class="hero__note">
+              <sup>*</sup>Equal contribution &nbsp;&nbsp; <sup>&dagger;</sup>Corresponding author
+            </p>
+
+            <div class="cta-row">
+              <a href="#" class="btn" target="_blank" rel="noreferrer">Paper (arXiv)</a>
+              <a class="btn btn--ghost" href="#bibtex">Cite</a>
+            </div>
+
+            <section class="hook" aria-label="Why SPAR">
+              <div class="hook__headline">🔥🔥🔥 Why SPAR? 🔥🔥🔥</div>
+
+              <div class="grid grid--4 hook__grid">
+                <div class="card hook__card hook__card--warn">
+                  <div class="hook__title">🚫 Semantics ≠ Pixels</div>
+                  <p class="hook__body">
+                    Semantic encoders are lossy: they discard high-frequency detail that pixel
+                    reconstruction needs, producing blurry artifacts in the generative space.
+                  </p>
+                </div>
+
+                <div class="card hook__card hook__card--bad">
+                  <div class="hook__title">🧩 Asymmetric dual-stream</div>
+                  <p class="hook__body">
+                    A lightweight semantic stream anchors discriminative features while a
+                    Transformer-augmented pixel stream recovers fine-grained details — decoupled by
+                    design.
+                  </p>
+                </div>
+
+                <div class="card hook__card hook__card--good">
+                  <div class="hook__title">🚀 Self-aligned generation</div>
+                  <p class="hook__body">
+                    The optimized tokenizer becomes its <i>own</i> alignment teacher for the
+                    diffusion model — no external feature network required.
+                  </p>
+                </div>
+
+                <div class="card hook__card hook__card--future">
+                  <div class="hook__title">🔭 Dynamic token routing</div>
+                  <p class="hook__body">
+                    Each token adaptively aggregates multi-layer MLLM features based on its distinct
+                    semantic role, better harnessing hierarchical representations for generation.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div class="container hero__keyFigure">
+          <figure class="card card--media card--heroKey heroKeyFull">
+            <button class="media media--full" data-lightbox="figures/intro.png" type="button">
+              <img src="figures/intro.png" alt="SPAR motivation overview" />
+              <span class="media__hint">Click to zoom</span>
+            </button>
+            <figcaption class="caption">
+              <b>(a) Image Reconstruction:</b> existing methods that model directly in the semantic
+              representation space suffer from lossy compression and struggle to preserve
+              high-frequency detail; SPAR effectively recovers pixel-level details.
+              <b>(b) Representation Alignment Paradigm:</b> unlike approaches that rely on external
+              semantic encoders to guide the generative model, SPAR natively employs the unified
+              tokenizer itself as the alignment teacher.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" id="abstract">
+        <div class="container">
+          <h2>Abstract</h2>
+          <div class="prose">
+            <p>
+              Multimodal Large Language Models (MLLMs) have achieved remarkable success in visual
+              understanding but remain constrained in visual generation due to the fundamental
+              feature discrepancy between semantic perception and pixel-level reconstruction.
+              Bridging this gap requires overcoming two core challenges:
+              <strong>(1)</strong> endowing semantic encoders with high-fidelity reconstruction
+              capabilities, and <strong>(2)</strong> effectively aligning generative models with
+              semantic spaces without relying on external teachers.
+            </p>
+            <p>
+              To this end, we propose a novel unified multimodal framework featuring
+              <strong>S</strong>emantic-<strong>P</strong>ixel self-alignment and
+              <strong>A</strong>daptive <strong>R</strong>outing (<strong>SPAR</strong>). First, to
+              reconcile semantic perception with pixel-level reconstruction, we introduce an
+              <b>asymmetric dual-stream unified tokenizer</b>. A lightweight semantic stream anchors
+              discriminative features, while a Transformer-augmented pixel stream recovers
+              fine-grained visual details into a unified compact latent space. Second, to eliminate
+              external dependencies, we propose a <b>self-aligned generation paradigm</b> that
+              natively leverages this optimized tokenizer as an internal alignment teacher for the
+              diffusion model. Furthermore, we introduce <b>Dynamic Token Routing</b>, which enables
+              each token to adaptively aggregate multi-layer MLLM features based on its distinct
+              semantic demands. Extensive experiments demonstrate that SPAR establishes the
+              state-of-the-art for unified architectures, achieving exceptional generation and
+              reconstruction quality while preserving foundational visual understanding capabilities.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section--alt" id="method">
+        <div class="container">
+          <h2>Method</h2>
+
+          <!-- Tokenizer -->
+          <div class="grid grid--2">
+            <div class="card card--media span-2">
+              <div class="card__title">
+                Semantic-Pixel Self-Aligned Unified Tokenizer
+              </div>
+              <button class="media" data-lightbox="figures/tokenizer.png" type="button">
+                <img src="figures/tokenizer.png" alt="Unified tokenizer architecture" />
+                <span class="media__hint">Click to zoom</span>
+              </button>
+              <div class="caption">
+                Our tokenizer explicitly <b>decouples semantic preservation from pixel
+                reconstruction</b>. A lightweight <b>semantic stream</b> maps features into a compact
+                latent space, strictly anchored by the frozen encoder to prevent catastrophic
+                forgetting (\(\mathcal{L}_{s}\)). Concurrently, a Transformer-augmented
+                <b>pixel stream</b> bridges the dimensional gap by aligning with the native pixel
+                latent space (\(\mathcal{L}_{p}\)) to recover high-frequency spatial details. Both
+                streams are fused and decoded to reconstruct the image (\(\mathcal{L}_{r}\)).
+              </div>
+            </div>
+          </div>
+
+          <!-- Unified model -->
+          <div class="grid grid--2">
+            <div class="card card--media span-2">
+              <div class="card__title">Unified Multimodal Model</div>
+              <button class="media" data-lightbox="figures/unified_model.png" type="button">
+                <img src="figures/unified_model.png" alt="Unified multimodal model overview" />
+                <span class="media__hint">Click to zoom</span>
+              </button>
+              <div class="caption">
+                The frozen MLLM processes multimodal inputs and learnable queries.
+                <b>Dynamic Token Routing (DTR)</b> adaptively aggregates multi-layer MLLM hidden
+                states based on distinct token semantics to condition the DiT. The optimized
+                tokenizer serves as an <b>internal alignment teacher</b>, establishing a
+                self-alignment paradigm that eliminates reliance on external learners.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="section" id="results">
+        <div class="container">
+          <h2>Results</h2>
+
+          <!-- Reconstruction -->
+          <div class="grid grid--2">
+            <div class="card span-2">
+              <div class="card__title">Image Reconstruction — ImageNet 50k (256×256)</div>
+              <p class="card__body">
+                SPAR sets a new state-of-the-art among unified tokenizers and is highly competitive
+                with generation-only tokenizers, reaching <b>rFID 0.27</b>, <b>PSNR 26.65</b>, and
+                <b>SSIM 0.856</b>.
+              </p>
+              <div class="table-wrap" role="region" aria-label="Reconstruction table" tabindex="0">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Model</th>
+                      <th>Ratio</th>
+                      <th>rFID ↓</th>
+                      <th>PSNR ↑</th>
+                      <th>SSIM ↑</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="row-group"><td colspan="5"><i>Generative Only Tokenizer</i></td></tr>
+                    <tr><td>VAR</td><td>16</td><td>1.00</td><td>22.63</td><td>0.755</td></tr>
+                    <tr><td>RAE</td><td>16</td><td>0.49</td><td>19.23</td><td>0.620</td></tr>
+                    <tr><td>SD-VAE</td><td>16</td><td>2.64</td><td>22.13</td><td>0.590</td></tr>
+                    <tr><td>DC-AE</td><td>32</td><td>0.69</td><td>23.85</td><td>0.660</td></tr>
+                    <tr><td>VA-VAE</td><td>16</td><td>0.28</td><td>27.96</td><td>0.790</td></tr>
+                    <tr class="row-group"><td colspan="5"><i>Unified Tokenizer</i></td></tr>
+                    <tr><td>VILA-U</td><td>16</td><td>1.80</td><td>–</td><td>–</td></tr>
+                    <tr><td>TokenFlow</td><td>16</td><td>1.37</td><td>21.41</td><td>0.687</td></tr>
+                    <tr><td>DualToken</td><td>16</td><td>0.54</td><td>23.56</td><td>0.742</td></tr>
+                    <tr><td>EMU2</td><td>14</td><td>3.27</td><td>13.49</td><td>0.420</td></tr>
+                    <tr><td>UniLIP</td><td>32</td><td>0.79</td><td>22.99</td><td>0.747</td></tr>
+                    <tr class="row-ours">
+                      <td><b>SPAR</b></td><td>32</td><td><b>0.27</b></td><td>26.65</td><td><b>0.856</b></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Understanding -->
+          <div class="grid grid--2">
+            <div class="card span-2">
+              <div class="card__title">Multimodal Understanding</div>
+              <p class="card__body">
+                Even with the visual encoder unfrozen during training, SPAR shows <b>no degradation</b>
+                in understanding — and even improves over the InternVL3 baseline thanks to the
+                dual-stream self-alignment.
+              </p>
+              <div class="table-wrap" role="region" aria-label="Understanding table" tabindex="0">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Model</th>
+                      <th>LLM</th>
+                      <th>MME-P</th>
+                      <th>MMB</th>
+                      <th>MMMU</th>
+                      <th>MM-Vet</th>
+                      <th>SEED</th>
+                      <th>MMVP</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="row-group"><td colspan="8"><i>Understanding Only</i></td></tr>
+                    <tr><td>LLaVA-OV</td><td>1B</td><td>1238</td><td>52.1</td><td>31.4</td><td>29.1</td><td>65.5</td><td>–</td></tr>
+                    <tr><td>InternVL3-1B</td><td>1B</td><td>1492</td><td>72.6</td><td>43.4</td><td>59.5</td><td>71.1</td><td>67.3</td></tr>
+                    <tr><td>InternVL3-2B</td><td>2B</td><td>1633</td><td>80.6</td><td>48.2</td><td>62.2</td><td>75.0</td><td>72.7</td></tr>
+                    <tr><td>Qwen2.5-VL-3B</td><td>3B</td><td>–</td><td>79.1</td><td>53.1</td><td>61.8</td><td>–</td><td>–</td></tr>
+                    <tr><td>Emu3-Chat-8B</td><td>8B</td><td>1244</td><td>58.5</td><td>31.6</td><td>37.2</td><td>68.2</td><td>36.6</td></tr>
+                    <tr class="row-group"><td colspan="8"><i>Understanding &amp; Generation</i></td></tr>
+                    <tr><td>Janus-Pro-7B</td><td>7B</td><td>1567</td><td>79.2</td><td>41.0</td><td>50.0</td><td>72.1</td><td>–</td></tr>
+                    <tr><td>BAGEL-7B</td><td>3B</td><td>1610</td><td>79.2</td><td>43.2</td><td>48.2</td><td>–</td><td>54.7</td></tr>
+                    <tr><td>BLIP3-o-4B</td><td>4B</td><td>1528</td><td>78.6</td><td>46.6</td><td>60.1</td><td>73.8</td><td>–</td></tr>
+                    <tr><td>Tar-7B</td><td>7B</td><td>1571</td><td>74.4</td><td>39.0</td><td>–</td><td>73.0</td><td>–</td></tr>
+                    <tr class="row-ours">
+                      <td><b>SPAR-1B</b></td><td>1B</td><td>1500</td><td>73.0</td><td>43.2</td><td>59.8</td><td>71.5</td><td>68.9</td>
+                    </tr>
+                    <tr class="row-ours">
+                      <td><b>SPAR-3B</b></td><td>2B</td><td><b>1638</b></td><td><b>80.7</b></td><td><b>48.7</b></td><td><b>62.2</b></td><td><b>75.1</b></td><td><b>73.3</b></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generation -->
+          <div class="grid grid--2">
+            <div class="card span-2">
+              <div class="card__title">Text-to-Image Generation — GenEval &amp; WISE</div>
+              <p class="card__body">
+                SPAR-3B reaches an overall <b>GenEval 0.91</b> (ranking first) and <b>WISE 0.64</b>,
+                surpassing even much larger generation-only models.
+              </p>
+              <div class="table-wrap" role="region" aria-label="Generation table" tabindex="0">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th rowspan="2">Model</th>
+                      <th rowspan="2">Params</th>
+                      <th colspan="3">GenEval</th>
+                      <th colspan="3">WISE</th>
+                    </tr>
+                    <tr>
+                      <th>Count</th><th>Pos.</th><th>Overall</th>
+                      <th>Cultural</th><th>Biology</th><th>Overall</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="row-group"><td colspan="8"><i>Generation Only</i></td></tr>
+                    <tr><td>FLUX.1-dev</td><td>12B</td><td>0.75</td><td>0.68</td><td>0.82</td><td>0.48</td><td>0.42</td><td>0.50</td></tr>
+                    <tr><td>SD3-Medium</td><td>2B</td><td>0.72</td><td>0.33</td><td>0.74</td><td>0.42</td><td>0.39</td><td>0.42</td></tr>
+                    <tr class="row-group"><td colspan="8"><i>Understanding &amp; Generation</i></td></tr>
+                    <tr><td>Janus-Pro</td><td>7B</td><td>0.59</td><td>0.79</td><td>0.80</td><td>0.30</td><td>0.36</td><td>0.35</td></tr>
+                    <tr><td>BAGEL</td><td>7B</td><td>0.81</td><td>0.64</td><td>0.82</td><td>0.44</td><td>0.44</td><td>0.52</td></tr>
+                    <tr><td>OpenUni-L</td><td>3B</td><td>0.77</td><td>0.75</td><td>0.85</td><td>0.51</td><td>0.48</td><td>0.52</td></tr>
+                    <tr><td>Tar</td><td>7B</td><td>0.83</td><td>0.80</td><td>0.84</td><td>–</td><td>–</td><td>–</td></tr>
+                    <tr class="row-ours">
+                      <td><b>SPAR-1B</b></td><td>1B</td><td>0.83</td><td>0.85</td><td>0.89</td><td>0.54</td><td>0.51</td><td>0.57</td>
+                    </tr>
+                    <tr class="row-ours">
+                      <td><b>SPAR-3B</b></td><td>3B</td><td><b>0.84</b></td><td><b>0.87</b></td><td><b>0.91</b></td><td><b>0.67</b></td><td><b>0.61</b></td><td><b>0.64</b></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Editing -->
+          <div class="grid grid--2">
+            <div class="card span-2">
+              <div class="card__title">Image Editing — ImgEdit-Bench</div>
+              <p class="card__body">
+                SPAR-3B achieves an overall <b>4.01</b>, the highest among open-source methods and
+                closely approaching the proprietary GPT-4o (4.20), with a +0.58 improvement over the
+                second-best OmniGen2.
+              </p>
+              <div class="table-wrap" role="region" aria-label="Editing table" tabindex="0">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Model</th><th>Add</th><th>Adj.</th><th>Ext.</th><th>Repl.</th>
+                      <th>Rmv.</th><th>Bkg.</th><th>Style</th><th>Hyb.</th><th>Act.</th><th>Overall</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>GPT-4o</td><td>4.61</td><td>4.33</td><td>2.90</td><td>4.35</td><td>3.66</td><td>4.57</td><td>4.93</td><td>3.96</td><td>4.89</td><td>4.20</td></tr>
+                    <tr class="row-group"><td colspan="11"><i>Open-source</i></td></tr>
+                    <tr><td>Step1X-Edit</td><td>3.88</td><td>3.14</td><td>1.76</td><td>3.40</td><td>2.41</td><td>3.16</td><td>4.63</td><td>2.64</td><td>2.52</td><td>3.06</td></tr>
+                    <tr><td>BAGEL</td><td>3.56</td><td>3.31</td><td>1.70</td><td>3.30</td><td>2.62</td><td>3.24</td><td>4.49</td><td>2.38</td><td>4.17</td><td>3.20</td></tr>
+                    <tr><td>UniWorld-V1</td><td>3.82</td><td>3.64</td><td>2.27</td><td>3.47</td><td>3.24</td><td>2.99</td><td>4.21</td><td>2.96</td><td>2.74</td><td>3.26</td></tr>
+                    <tr><td>OmniGen2</td><td>3.57</td><td>3.06</td><td>1.77</td><td>3.74</td><td>3.20</td><td>3.57</td><td>4.81</td><td>2.52</td><td>4.68</td><td>3.44</td></tr>
+                    <tr class="row-ours">
+                      <td><b>SPAR-3B</b></td><td><b>4.31</b></td><td><b>3.93</b></td><td><b>2.32</b></td><td><b>4.52</b></td><td><b>4.15</b></td><td><b>4.20</b></td><td><b>4.87</b></td><td><b>3.12</b></td><td><b>4.69</b></td><td><b>4.01</b></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="section section--alt" id="gallery">
+        <div class="container">
+          <h2>Qualitative Gallery</h2>
+          <div class="grid grid--2">
+            <div class="card card--media span-2">
+              <div class="card__title">Text-to-Image Generation</div>
+              <button class="media" data-lightbox="figures/vis_appendix.png" type="button">
+                <img src="figures/vis_appendix.png" alt="Text-to-image qualitative results" />
+                <span class="media__hint">Click to zoom</span>
+              </button>
+              <div class="caption">
+                Qualitative results of SPAR image generation: accurate structure, fine-grained
+                textures, and faithful prompt following.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section--alt" id="bibtex">
+        <div class="container">
+          <h2>BibTeX</h2>
+          <div class="card">
+            <div class="card__title">🥺 Cite this work if it's helpful</div>
+            <pre class="code" id="bibtexBlock"><code>@inproceedings{li2026spar,
+  title     = {SPAR: Semantic-Pixel Self-Alignment and Adaptive Routing
+               for Unified Multimodal Models},
+  author    = {Li, Hongxiang and Chen, Hongxu and Zhu, Chenyang and
+               Huang, Xiaoshuang and Cai, Jiayin and Jiang, Xiaolong and
+               Hu, Yao and Chen, Long},
+  booktitle = {European Conference on Computer Vision (ECCV)},
+  year      = {2026}
+}</code></pre>
+            <div class="cta-row">
+              <button class="btn btn--primary" id="copyBibtex" type="button">Copy BibTeX</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="container footer__inner">
+          <div class="footer__left">
+            <div class="muted small">
+              The Hong Kong University of Science and Technology · Tsinghua University · Xiaohongshu Inc.
+            </div>
+            <div class="muted small">
+              Website template inspired by
+              <a href="https://jshilong.github.io/PS-VAE-PAGE/" target="_blank" rel="noreferrer"
+                >PS-VAE</a
+              >.
+            </div>
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <div class="lightbox" id="lightbox" aria-hidden="true">
+      <button class="lightbox__backdrop" type="button" aria-label="Close"></button>
+      <figure class="lightbox__figure" role="dialog" aria-modal="true" aria-label="Image viewer">
+        <button class="lightbox__close" type="button" aria-label="Close">×</button>
+        <img class="lightbox__img" alt="" />
+        <figcaption class="lightbox__caption muted small"></figcaption>
+      </figure>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        try {
+          renderMathInElement(document.body, {
+            delimiters: [
+              { left: "$$", right: "$$", display: true },
+              { left: "\\[", right: "\\]", display: true },
+              { left: "\\(", right: "\\)", display: false },
+              { left: "$", right: "$", display: false },
+            ],
+            throwOnError: false,
+          });
+        } catch {}
+      });
+    </script>
+  </body>
+</html>
